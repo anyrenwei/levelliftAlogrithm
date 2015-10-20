@@ -27,6 +27,17 @@ public class Diagram {
 		classes.put(c.getName(), c);
 		return true;
 	}
+	
+	
+	public boolean delClass(Class c) {
+		
+		if(c == null)
+			return false;
+		classes.remove(c);
+		return true;
+		
+	}
+	
 
 	public Class retrieveClass(String name) {
 		return classes.get(name);

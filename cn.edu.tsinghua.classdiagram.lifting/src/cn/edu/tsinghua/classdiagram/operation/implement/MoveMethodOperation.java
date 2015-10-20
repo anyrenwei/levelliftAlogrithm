@@ -10,63 +10,53 @@ import cn.edu.tsinghua.classdiagram.operation.CompositeOperation;
 import cn.edu.tsinghua.classdiagram.operation.Operation;
 import cn.edu.tsinghua.classdiagram.util.StrLinker;
 
-public class MoveAttrOperation extends CompositeOperation {
+public class MoveMethodOperation extends CompositeOperation {
 
-	private String fromClassName;
-	private String toClassName;
-	private String attrName;
-
-	public String getFromClassName() {
-		return fromClassName;
-	}
-
-	public String getToClassName() {
-		return toClassName;
-	}
-
-	public String getAttrName() {
-		return attrName;
-	}
-
-	public MoveAttrOperation() {
+	private String fromClass;
+	private String toClass;
+	private String methodName;
+	
+	
+	public MoveMethodOperation(){
 		mainOperationsType = new ArrayList<java.lang.Class<?>>();
-		mainOperationsType.add(DeleteAttrOperation.class);
-		mainOperationsType.add(AddAttrOperation.class);
+		mainOperationsType.add(DeleteMethodOperation.class);
+		mainOperationsType.add(AddMethodOperation.class);
 	}
-
-	public MoveAttrOperation(String fromClassName, String toClassName,
-			String attrName) {
+	
+	public MoveMethodOperation(String fromClass, String toClass, String methodName){
+		
 		this();
-		this.fromClassName = fromClassName;
-		this.toClassName = toClassName;
-		this.attrName = attrName;
+		this.fromClass = fromClass;
+		this.toClass = toClass;
+		this.methodName = methodName;
 	}
-
-	public MoveAttrOperation(Diagram state, String fromClassName,
-			String toClassName, String attrName) {
-		this(fromClassName, toClassName, attrName);
-		setAllState(state);
-		initSubOperations();
+	
+	public MoveMethodOperation(Diagram state,String fromClass, String toClass, String methodName){
+		this(fromClass, toClass, methodName);
+		this.setAllState(state);
+		this.initSubOperations();
 	}
-
+	
+	
 	@Override
 	public void initSubOperations() {
+		// TODO Auto-generated method stub
 		subOperations = new ArrayList<Operation>();
-		subOperations.add(new DeleteAttrOperation(fromClassName, attrName));
-		subOperations.add(new AddAttrOperation(toClassName, attrName));
+		subOperations.add(new DeleteMethodOperation(fromClass, methodName));
+		subOperations.add(new AddMethodOperation(toClass, methodName));
 	}
 
 	@Override
 	protected void setRelatedElements() {
-		String elements[] = { StrLinker.linkAttr(fromClassName, attrName),
-				StrLinker.linkAttr(toClassName, attrName) };
+		String elements[] = { StrLinker.linkAttr(fromClass, methodName),
+				StrLinker.linkAttr(toClass, methodName) };
 		relatedElements = new HashSet<String>(Arrays.asList(elements));
 	}
-
+	
 	@Override
 	public boolean searchOtherMains(List<Operation> sequence,
 			List<Integer> resultIndexs) {
-		System.out.println("MoveAttrOperation.searchOtherMains()");
+		System.out.println("MoveMethodOperation.searchOtherMains()");
 		if (null == resultIndexs || resultIndexs.isEmpty())
 			return false;
 
@@ -74,17 +64,17 @@ public class MoveAttrOperation extends CompositeOperation {
 		int deleteOpIndex = resultIndexs.get(0);
 		// 省略类型检查
 		System.out.println("op:"+sequence.get(deleteOpIndex).getClass().getSimpleName());
-		DeleteAttrOperation delOp = (DeleteAttrOperation) sequence
+		DeleteMethodOperation delOp = (DeleteMethodOperation) sequence
 				.get(deleteOpIndex);
 		for (int i = deleteOpIndex - 1; i >= 0; i--) {
 			Operation o = sequence.get(i);
 			// 该属性删除前进行了使用
 			if (delOp.relatedWith(o))
 				break;
-			if (!(o instanceof AddAttrOperation))
+			if (!(o instanceof AddMethodOperation))
 				continue;
-			AddAttrOperation addOp = (AddAttrOperation) o;
-			if (!addOp.getAttrName().equals(delOp.getAttrName()))
+			AddMethodOperation addOp = (AddMethodOperation) o;
+			if (!addOp.getMethodName().equals(delOp.getMethodName()))
 				continue;
 			resultIndexs.add(i);
 			return true;
@@ -94,33 +84,37 @@ public class MoveAttrOperation extends CompositeOperation {
 			Operation o = sequence.get(i);
 			if (delOp.relatedWith(o))
 				break;
-			if (!(o instanceof AddAttrOperation))
+			if (!(o instanceof AddMethodOperation))
 				continue;
-			AddAttrOperation addOp = (AddAttrOperation) o;
-			if (!addOp.getAttrName().equals(delOp.getAttrName()))
+			AddMethodOperation addOp = (AddMethodOperation) o;
+			if (!addOp.getMethodName().equals(delOp.getMethodName()))
 				continue;
 			resultIndexs.add(i);
 			return true;
 		}
 		return false;
 	}
-
+	
+	
 	@Override
 	public CompositeOperation generateByMains(List<Operation> mains) {
+		// TODO Auto-generated method stub
+
 		if (mains.size() != 2)
 			return null;
 		int addOpIndex = 0;
-		if (mains.get(0) instanceof DeleteAttrOperation)
+		if (mains.get(0) instanceof DeleteMethodOperation)
 			addOpIndex = 1;
-		AddAttrOperation addOp = (AddAttrOperation) mains.get(addOpIndex);
-		DeleteAttrOperation delOp = (DeleteAttrOperation) mains
+		AddMethodOperation addOp = (AddMethodOperation) mains.get(addOpIndex);
+		DeleteMethodOperation delOp = (DeleteMethodOperation) mains
 				.get(1 - addOpIndex);
 
-		// 组合成候选的MoveAttrOperation
-		return new MoveAttrOperation(delOp.getClassName(),
-				addOp.getClassName(), addOp.getAttrName());
+		// 组合成候选的MoveMethodOperation
+		return new MoveMethodOperation(delOp.getClassName(),
+				addOp.getClassName(), addOp.getMethodName());
+	
 	}
-
+	
 	/**
 	 * 对于move，没有主操作以外的操作，只需要验证合法就可以
 	 * 
@@ -143,11 +137,35 @@ public class MoveAttrOperation extends CompositeOperation {
 
 	@Override
 	public Diagram execute() {
-		curState = new DeleteAttrOperation(curState, fromClassName, attrName)
+		curState = new DeleteMethodOperation(curState, fromClass, methodName)
 				.execute();
-		curState = new AddAttrOperation(curState, toClassName, attrName)
+		curState = new AddMethodOperation(curState, toClass, methodName)
 				.execute();
 		return curState;
+	}
+
+	public String getFromClass() {
+		return fromClass;
+	}
+
+	public void setFromClass(String fromClass) {
+		this.fromClass = fromClass;
+	}
+
+	public String getToClass() {
+		return toClass;
+	}
+
+	public void setToClass(String toClass) {
+		this.toClass = toClass;
+	}
+
+	public String getMethodName() {
+		return methodName;
+	}
+
+	public void setMethodName(String methodName) {
+		this.methodName = methodName;
 	}
 
 }

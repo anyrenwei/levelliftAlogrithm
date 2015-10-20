@@ -6,11 +6,8 @@ import cn.edu.tsinghua.classdiagram.diagram.Diagram;
 import cn.edu.tsinghua.classdiagram.operation.CompositeOperation;
 import cn.edu.tsinghua.classdiagram.operation.Operation;
 
-public class ExtractSuperClass extends CompositeOperation {
+public class ExtractSuperClassMethod extends CompositeOperation {
 
-	
-	
-	
 	@Override
 	public void initSubOperations() {
 		// TODO Auto-generated method stub
