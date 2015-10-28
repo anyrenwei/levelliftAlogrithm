@@ -1,8 +1,6 @@
 package cn.edu.tsinghua.classdiagram.operation.implement;
 
 import java.util.HashSet;
-import java.util.Iterator;
-
 import cn.edu.tsinghua.classdiagram.classdiagram.Attribute;
 import cn.edu.tsinghua.classdiagram.classdiagram.Class;
 import cn.edu.tsinghua.classdiagram.diagram.Diagram;

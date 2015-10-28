@@ -8,52 +8,36 @@ import cn.edu.tsinghua.classdiagram.diagram.Diagram;
 import cn.edu.tsinghua.classdiagram.operation.CompositeOperation;
 import cn.edu.tsinghua.classdiagram.operation.Operation;
 
-public class FlattenHierarchy extends CompositeOperation {
+public class ExtractSubClassAttribute extends CompositeOperation {
 
 	private String subClassName;
-	
 	private String attrName;
 	
-	public FlattenHierarchy(){
+	public ExtractSubClassAttribute(){
 		
 		mainOperationsType = new ArrayList<java.lang.Class<?>>();
 		mainOperationsType.add(PushDownAttrOperation.class);
 	}
 	
-	public FlattenHierarchy(String subClassName, String attrName){
+	public ExtractSubClassAttribute(String subClassName, String attrName)
+	{
 		this();
 		this.subClassName = subClassName;
 		this.attrName = attrName;
 	}
 	
-	public FlattenHierarchy(Diagram state, String subClassName, String attrName){
+	public ExtractSubClassAttribute(Diagram state, String subClassName, String attrName){
 		
 		this(subClassName,attrName);
 		this.setAllState(state);
+		this.initSubOperations();
 	}
 	
-	
-	
-	public String getParentClassName() {
-		return subClassName;
-	}
-
-	public void setParentClassName(String subClassName) {
-		this.subClassName = subClassName;
-	}
-
-	public String getAttrName() {
-		return attrName;
-	}
-
-	public void setAttrName(String attrName) {
-		this.attrName = attrName;
-	}
-
 	@Override
 	public void initSubOperations() {
 		// TODO Auto-generated method stub
 		subOperations = new ArrayList<Operation>();
+
 	}
 
 	@Override
@@ -75,7 +59,7 @@ public class FlattenHierarchy extends CompositeOperation {
 		// this.parentClass = moveOp.getToClass();
 		this.attrName = pushDownOp.getAttrName();
 		// 暂时将move的pre当做自己的pre
-		return new FlattenHierarchy(preState, subClassName,
+		return new ExtractSubClassAttribute(preState, subClassName,
 				attrName);
 	
 	}

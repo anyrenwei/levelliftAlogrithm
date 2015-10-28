@@ -11,7 +11,7 @@ import cn.edu.tsinghua.classdiagram.operation.Operation;
 import cn.edu.tsinghua.classdiagram.util.StrLinker;
 
 public class PushDownAttrOperation extends CompositeOperation {
-	private String parentClassName;
+	private String subClassName;
 	private String attrName;
 
 	public PushDownAttrOperation() {
@@ -19,15 +19,15 @@ public class PushDownAttrOperation extends CompositeOperation {
 		mainOperationsType.add(MoveAttrOperation.class);
 	}
 
-	public PushDownAttrOperation(String parentClassName, String attrName) {
+	public PushDownAttrOperation(String subClassName, String attrName) {
 		this();
-		this.parentClassName = parentClassName;
+		this.subClassName = subClassName;
 		this.attrName = attrName;
 	}
 
-	public PushDownAttrOperation(Diagram state, String parentClass,
+	public PushDownAttrOperation(Diagram state, String subClassName,
 			String attrName) {
-		this(parentClass, attrName);
+		this(subClassName, attrName);
 		setAllState(state);
 		initSubOperations();
 	}
@@ -51,11 +51,11 @@ public class PushDownAttrOperation extends CompositeOperation {
 				|| !toClass.getSuper().getName().equals(fromClass.getName()))
 			return null;
 
-		this.parentClassName = moveOp.getFromClassName();
+		this.subClassName = moveOp.getFromClassName();
 		// this.parentClass = moveOp.getToClass();
 		this.attrName = moveOp.getAttrName();
 		// 暂时将move的pre当做自己的pre
-		return new PushDownAttrOperation(preState, parentClassName, attrName);
+		return new PushDownAttrOperation(preState, subClassName, attrName);
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class PushDownAttrOperation extends CompositeOperation {
 			resultIndexs.add(i);
 		}
 
-		Class parent = preState.retrieveClass(parentClassName);
+		Class parent = preState.retrieveClass(subClassName);
 		// 操作的数量应当等于子类数量
 		if (resultIndexs.size() < parent.getChildren().size())
 			return false;
@@ -97,12 +97,28 @@ public class PushDownAttrOperation extends CompositeOperation {
 	@Override
 	protected void setRelatedElements() {
 		relatedElements = new HashSet<String>();
-		relatedElements.add(StrLinker.linkAttr(parentClassName, attrName));
-		Class parent = preState.retrieveClass(parentClassName);
+		relatedElements.add(StrLinker.linkAttr(subClassName, attrName));
+		Class parent = preState.retrieveClass(subClassName);
 		for (Class c : parent.getChildren()) {
 			relatedElements.add(StrLinker.linkAttr(c.getName(), attrName));
 			relatedElements.add(StrLinker.linkSuper(c.getName()));
 		}
+	}
+
+	public String getSubClassName() {
+		return subClassName;
+	}
+
+	public void setSubClassName(String subClassName) {
+		this.subClassName = subClassName;
+	}
+
+	public String getAttrName() {
+		return attrName;
+	}
+
+	public void setAttrName(String attrName) {
+		this.attrName = attrName;
 	}
 
 	@Override

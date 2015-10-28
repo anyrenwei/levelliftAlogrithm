@@ -10,30 +10,27 @@ import cn.edu.tsinghua.classdiagram.operation.CompositeOperation;
 import cn.edu.tsinghua.classdiagram.operation.Operation;
 import cn.edu.tsinghua.classdiagram.util.StrLinker;
 
-public class ExtractSuperClassAttribute extends CompositeOperation {
+public class PullUpMethodOperation extends CompositeOperation {
 
-	private String superClassName;
+	private String parentClassName;
+	private String methodName;
 	
-	private String attrName;
-	
-	
-	public ExtractSuperClassAttribute(){
-		
+	public PullUpMethodOperation(){
 		mainOperationsType = new ArrayList<java.lang.Class<?>>();
-		mainOperationsType.add(PullUpAttrOperation.class);
+		mainOperationsType.add(MoveMethodOperation.class);
 	}
 	
-	public ExtractSuperClassAttribute(String superClassName, String attrName){
-		
+	public PullUpMethodOperation(String parentClassName, String methodName)
+	{
 		this();
-		this.superClassName = superClassName;
-		this.attrName = attrName;
-		
+		this.parentClassName  = parentClassName;
+		this.methodName = methodName;
 	}
-	public ExtractSuperClassAttribute(Diagram state, String superClassName, String attrName){
-		
-		this(superClassName,attrName);
-		this.setAllState(state);
+	
+	public PullUpMethodOperation(Diagram state, String parentClassName, String methodName)
+	{
+		this(parentClassName, methodName);
+		setAllState(state);
 		initSubOperations();
 	}
 	
@@ -43,28 +40,28 @@ public class ExtractSuperClassAttribute extends CompositeOperation {
 	public void initSubOperations() {
 		// TODO Auto-generated method stub
 		subOperations = new ArrayList<Operation>();
-
 	}
 
 	@Override
 	public CompositeOperation generateByMains(List<Operation> mains) {
 		// TODO Auto-generated method stub
 		if (mains.size() != 1
-				|| !mains.get(0).getClass().equals(PullUpAttrOperation.class))
+				|| !mains.get(0).getClass().equals(MoveMethodOperation.class))
 			return null;
-		PullUpAttrOperation pullUpOp = (PullUpAttrOperation) mains.get(0);
-		Diagram preState = pullUpOp.getPreState();
-		Class parentClass = preState.retrieveClass(pullUpOp.getParentClassName());
-//		Class toClass = preState.retrieveClass(moveOp.getToClassName());
-		if (parentClass.getSuper() == null)
+		MoveMethodOperation moveOp = (MoveMethodOperation) mains.get(0);
+		Diagram preState = moveOp.getPreState();
+		Class fromClass = preState.retrieveClass(moveOp.getFromClass());
+		Class toClass = preState.retrieveClass(moveOp.getToClass());
+		if (fromClass.getSuper() == null
+				|| !fromClass.getSuper().getName().equals(toClass.getName()))
 			return null;
 
-		this.superClassName = pullUpOp.getParentClassName();
+		this.parentClassName = moveOp.getToClass();
 		// this.parentClass = moveOp.getToClass();
-		this.attrName = pullUpOp.getAttrName();
+		this.methodName = moveOp.getMethodName();
 		// 暂时将move的pre当做自己的pre
-		return new PullUpAttrOperation(preState, superClassName,
-				attrName);
+		return new PullUpMethodOperation(preState, parentClassName,
+				methodName);
 	}
 
 	@Override
@@ -72,14 +69,14 @@ public class ExtractSuperClassAttribute extends CompositeOperation {
 		// TODO Auto-generated method stub
 		if (resultIndexs.size() < 1)
 			return false;
-		// 只有一个主操作pullUp
+		// 只有一个主操作move
 		int main = resultIndexs.get(0);
-		// 的所有非主操作都是AddClassOperation
+		// pullup的所有非主操作都是DeleteAttrOperation
 		for (int i = main - 1; i >= 0; i--) {
 			Operation o = sequence.get(i);
 			if (!relatedWith(o))
 				continue;
-			if (!(o instanceof AddClassOperation))
+			if (!(o instanceof DeleteMethodOperation))
 				break;
 			// DeleteAttrOperation delOp = (DeleteAttrOperation)o;
 			// 这里相关的删除操作一定是删除子类相同属性的操作f，即子操作
@@ -87,15 +84,14 @@ public class ExtractSuperClassAttribute extends CompositeOperation {
 		}
 		for (int i = main + 1; i < sequence.size(); i++) {
 			Operation o = sequence.get(i);
-			//related方法得修改
 			if (!relatedWith(o))
 				continue;
-			if (!(o instanceof AddClassOperation))
+			if (!(o instanceof DeleteMethodOperation))
 				break;
 			resultIndexs.add(i);
 		}
 
-		Class parent = preState.retrieveClass(superClassName);
+		Class parent = preState.retrieveClass(parentClassName);
 		// 操作的数量应当等于子类数量
 		if (resultIndexs.size() < parent.getChildren().size())
 			return false;
@@ -111,13 +107,31 @@ public class ExtractSuperClassAttribute extends CompositeOperation {
 	@Override
 	protected void setRelatedElements() {
 		// TODO Auto-generated method stub
+
 		relatedElements = new HashSet<String>();
-		relatedElements.add(StrLinker.linkAttr(superClassName, attrName));
-		Class parent = preState.retrieveClass(superClassName);
+		relatedElements.add(StrLinker.linkMeth(parentClassName, methodName));
+		Class parent = preState.retrieveClass(parentClassName);
 		for (Class c : parent.getChildren()) {
-			relatedElements.add(StrLinker.linkAttr(c.getName(), attrName));
+			relatedElements.add(StrLinker.linkMeth(c.getName(), methodName));
 			relatedElements.add(StrLinker.linkSuper(c.getName()));
 		}
+	
+	}
+
+	public String getParentClassName() {
+		return parentClassName;
+	}
+
+	public void setParentClassName(String parentClassName) {
+		this.parentClassName = parentClassName;
+	}
+
+	public String getMethodName() {
+		return methodName;
+	}
+
+	public void setMethodName(String methodName) {
+		this.methodName = methodName;
 	}
 
 }

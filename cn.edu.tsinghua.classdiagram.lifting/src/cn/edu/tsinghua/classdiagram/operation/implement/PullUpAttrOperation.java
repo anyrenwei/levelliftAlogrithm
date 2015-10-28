@@ -11,6 +11,22 @@ import cn.edu.tsinghua.classdiagram.operation.Operation;
 import cn.edu.tsinghua.classdiagram.util.StrLinker;
 
 public class PullUpAttrOperation extends CompositeOperation {
+	public String getParentClassName() {
+		return parentClassName;
+	}
+
+	public void setParentClassName(String parentClassName) {
+		this.parentClassName = parentClassName;
+	}
+
+	public String getAttrName() {
+		return attrName;
+	}
+
+	public void setAttrName(String attrName) {
+		this.attrName = attrName;
+	}
+
 	private String parentClassName;
 	private String attrName;
 	// private Class parentClass;

@@ -1,32 +1,35 @@
-package cn.edu.tsinghua.classdiagram.operation.implement;
+package cn.edu.tsinghua.classdiagram.traditions;
 
 import java.util.HashSet;
 
+import cn.edu.tsinghua.classdiagram.classdiagram.Attribute;
 import cn.edu.tsinghua.classdiagram.classdiagram.Class;
 import cn.edu.tsinghua.classdiagram.classdiagram.Method;
+import cn.edu.tsinghua.classdiagram.classdiagram.ModelFactory;
 import cn.edu.tsinghua.classdiagram.diagram.Diagram;
 import cn.edu.tsinghua.classdiagram.operation.AtomicOperation;
 import cn.edu.tsinghua.classdiagram.util.StrLinker;
 
-public class RenameMethodOperation extends AtomicOperation {
+public class AddMethodOperation extends AtomicOperation {
 
 	private String className;
+	
 	private String methodName;
-	private String newMethodName;
 	
-	public RenameMethodOperation(){}
+	public AddMethodOperation(){}
 	
-	public RenameMethodOperation(String className, String methodName, String newMethodName){
+	public AddMethodOperation(String className, String methodName){
 		
 		this.className = className;
+		
 		this.methodName = methodName;
-		this.newMethodName = newMethodName;
+		
 	}
 	
-	public RenameMethodOperation(Diagram state, String className, String methodName, String newMethodName){
+	public AddMethodOperation(Diagram state, String className, String methodName){
 		
-		this(className,methodName,newMethodName);
-		this.setAllState(state);
+		this(className, methodName);
+		setAllState(state);
 	}
 	
 	public String getClassName() {
@@ -45,39 +48,26 @@ public class RenameMethodOperation extends AtomicOperation {
 		this.methodName = methodName;
 	}
 
-	public String getNewMethodName() {
-		return newMethodName;
-	}
-
-	public void setNewMethodName(String newMethodName) {
-		this.newMethodName = newMethodName;
-	}
-
 	@Override
 	public Diagram execute() {
 		// TODO Auto-generated method stub
 		Class c = curState.retrieveClass(className);
-		if (c != null) {
-			for(Method m:c.getMethods())
-			{
-				if(m.getName()!=null&&m.getName().equals(methodName))
-				{
-					m.setName(newMethodName);
-				}
-			}
-		}
+		Method m = ModelFactory.eINSTANCE.createMethod();
+		m.setName(methodName);
+		c.getMethods().add(m);
 //		postState = (Diagram)curState.clone();
 		return curState;
 	}
 
 	@Override
 	protected void setRelatedElements() {
+		// TODO Auto-generated method stub
 		relatedElements = new HashSet<String>();
 		relatedElements.add(getReletedAttr());
 	}
-	
-	private String getReletedAttr() {
-		return StrLinker.linkRenameMethod(className, newMethodName);
-	}
 
+	private String getReletedAttr() {
+		return StrLinker.linkMeth(className, methodName);
+	}
+	
 }
